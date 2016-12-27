@@ -6,33 +6,36 @@ export default class Playlist extends React.Component {
 		super (props);
 	}
 
-	componentDidMount () {
-		this.props.selectPlaylist(this.props.routeParams.playlistId)
-	}
 
-	componentWillReceiveProps (nextProps) {
-		if (nextProps.routeParams.playlistId !== this.props.routeParams.playlistId) {
-			this.props.selectPlaylist(nextProps.routeParams.playlistId)
-		}
-	}
+
 
 	render () {
+		
+		function displaySongOptions (song, i) {
+			return <option key = { song.id } value= { i } >{ song.name }</option>
+		}
+
 		let playlist = this.props.selectedPlaylist;
 		return <div>
 			<h3>{ playlist.name }</h3>
-			<Songs songs={playlist.songs} /> {/** Hooray for reusability! */}
+			<Songs 
+				currentSong = { this.props.currentSong }
+				songs={ playlist.songs }
+				toggleOne = { this.props.toggleOne }
+				isPlaying = { this.props.isPlaying } /> {/** Hooray for reusability! */}
 			{ playlist.songs && !playlist.songs.length && <small>No songs.</small> }
 			<hr />
 			<div className="well">
-			    <form className="form-horizontal" noValidate name="songSelect">
+			    <form className="form-horizontal" noValidate name="songSelect" onSubmit = { this.props.addSong }>
 			      <fieldset>
 			        <legend>Add to Playlist</legend>
 			        <div className="form-group">
 			          <label htmlFor="song" className="col-xs-2 control-label">Song</label>
 			          <div className="col-xs-10">
-			            <select className="form-control" name="song">
-			              <option value='song 1'>song name</option>
-			              <option value='song 2'>another song name</option>
+			            <select className="form-control" name="song" onChange = { this.props.selectSong }>
+			            {
+			            	this.props.songs.map(displaySongOptions)
+			            }
 			            </select>
 			          </div>
 			        </div>
