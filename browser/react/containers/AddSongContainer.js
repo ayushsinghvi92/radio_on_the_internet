@@ -1,52 +1,67 @@
-import Playlist from '../components/Playlist';
 import React from 'react';
-import axios from 'axios';
+import AddSong from '../components/AddSong';
+import store from '../store';
+import {loadAllSongs, addSongToPlaylist} from '../action-creators/playlists';
 
+class AddSongContainer extends React.Component {
 
-export default class AddSongContainer extends React.Component {
-	constructor (props) {
-		super(props);
-		this.state = {
-			selectedSong : {}
-		}
+  constructor(props) {
+    super(props);
+    this.state = Object.assign({
+      songId: 1,
+      error: false
+    }, store.getState());
+    this.handleChange = this.handleChange.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
+  }
 
-		this.handleSubmit = this.handleSubmit.bind(this);
-		this.handleChange = this.handleChange.bind(this);
+  componentDidMount() {
 
-	}
+    this.unsubscribe = store.subscribe(() => {
+      this.setState(store.getState());
+    });
 
-	componentDidMount () {
-		this.props.selectPlaylist(this.props.routeParams.playlistId)
-	}
+    store.dispatch(loadAllSongs());
 
-	componentWillReceiveProps (nextProps) {
-		if (nextProps.routeParams.playlistId !== this.props.routeParams.playlistId) {
-			this.props.selectPlaylist(nextProps.routeParams.playlistId)
-		}
-	}
+  }
 
-	handleSubmit (e) {
-		const playlist = this.props.selectedPlaylist;
-		e.preventDefault();
-		axios.post(`/api/playlists/${playlist.id}/songs`, this.state.selectedSong)
-		.then(res => res.data)
-		.then(song => this.props.selectPlaylist (playlist.id))
-	}
+  componentWillUnmount() {
+    this.unsubscribe();
+  }
 
-	handleChange (e) {
-		this.setState({selectedSong: this.props.songs[e.target.value]});
-	}
+  handleChange(evt) {
+    this.setState({
+      songId: evt.target.value,
+      error: false
+    });
+  }
 
-	render () {
-		return <Playlist
-		toggleOne = { this.props.toggleOne } 
-		currentSong = {this.props.currentSong}
-		songs = { this.props.songs }
-		selectedPlaylist = { this.props.selectedPlaylist }
-		selectedSong = { this.state.selectedSong }
-		selectSong = { this.handleChange }
-		addSong = { this.handleSubmit } 
-		isPlaying = { this.props.isPlaying }
-		/>
-	}
+  handleSubmit(evt) {
+
+    evt.preventDefault();
+
+    const playlistId = this.state.playlists.selected.id;
+    const songId = this.state.songId;
+
+    store.dispatch(addSongToPlaylist(playlistId, songId))
+      .catch(() => this.setState({ error: true }));
+
+  }
+
+  render() {
+
+    const songs = this.state.songs;
+    const error = this.state.error;
+
+    return (
+      <AddSong
+        {...this.props}
+        songs={songs}
+        error={error}
+        handleChange={this.handleChange}
+        handleSubmit={this.handleSubmit}/>
+    );
+  }
 }
+
+export default AddSongContainer;
