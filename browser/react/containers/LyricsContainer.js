@@ -1,60 +1,53 @@
-import React, {Component} from 'react';
-import store from '../store';
+import React, { Component } from 'react';
 import Lyrics from '../components/Lyrics';
+import { searchLyrics } from '../action-creators/lyrics';
+import { connect } from 'react-redux';
 
-import {searchLyrics} from '../action-creators/lyrics';
+const mapStateToProps = (state) => {
+  return {
+    text: state.lyrics.text
+  };
+};
 
-export default class extends Component {
-
-  constructor() {
-
-    super();
-
-    this.state = Object.assign({
-      artistQuery: '',
-      songQuery: ''
-    }, store.getState());
-
-    this.handleSubmit = this.handleSubmit.bind(this);
-    this.handleArtistInput = this.handleArtistInput.bind(this);
-    this.handleSongInput = this.handleSongInput.bind(this);
-
-  }
-
-  componentDidMount() {
-    this.unsubscribe = store.subscribe(() => {
-      this.setState(store.getState());
-    });
-  }
-
-  handleArtistInput(artist) {
-    this.setState({ artistQuery: artist });
-  }
-
-  handleSongInput(song) {
-    this.setState({ songQuery: song });
-  }
-
-  handleSubmit(e) {
-    e.preventDefault();
-    if (this.state.artistQuery && this.state.songQuery) {
-      store.dispatch(searchLyrics(this.state.artistQuery, this.state.songQuery));
+const mapDispatchToProps = (dispatch) => {
+  return {
+    searchLyrics ({artistQuery, songQuery}) {
+      dispatch(searchLyrics(artistQuery, songQuery));
     }
+  };
+};
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(class extends Component {
+
+  constructor (props) {
+    super(props);
+    this.state = { artistQuery: '', songQuery: '' };
+    this.handleChange = this.handleChange.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
   }
 
-  componentWillUnmount() {
-    this.unsubscribe();
+  handleChange (type, value) {
+    this.setState({ [`${type}Query`]: value });
   }
 
-  render() {
+  handleSubmit (evt) {
+    evt.preventDefault();
+    if (this.state.artistQuery && this.state.songQuery)
+      this.props.searchLyrics(this.state)
+  }
+
+  render () {
     return (
       <Lyrics
         {...this.state}
+        {...this.props}
         handleChange={this.handleChange}
-        setArtist={this.handleArtistInput}
-        setSong={this.handleSongInput}
-        handleSubmit={this.handleSubmit} />
+        handleSubmit={this.handleSubmit}
+      />
     );
   }
+});
 
-}

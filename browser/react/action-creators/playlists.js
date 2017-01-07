@@ -19,11 +19,6 @@ export const receivePlaylist = playlist => ({
   playlist
 });
 
-export const receiveAllSongs = songs => ({
-  type: RECEIVE_SONGS,
-  songs
-});
-
 export const getPlaylistById = playlistId => {
 
   return dispatch => {
@@ -49,15 +44,6 @@ export const addNewPlaylist = playlistName => {
 
   };
 
-};
-
-export const loadAllSongs = () => {
-  return dispatch => {
-    axios.get('/api/songs')
-      .then(response => {
-        dispatch(receiveAllSongs(response.data));
-      });
-  };
 };
 
 export const addSongToPlaylist = (playlistId, songId) => {

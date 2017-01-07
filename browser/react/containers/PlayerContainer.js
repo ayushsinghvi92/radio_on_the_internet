@@ -1,54 +1,52 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import AUDIO from '../audio';
-import store from '../store';
-import {previous, next, setProgress, toggleSong} from '../action-creators/player';
+import { previous, next, setProgress, toggleSong } from '../action-creators/player';
 import Player from '../components/Player';
+import { connect } from 'react-redux';
 
-export default class extends Component {
+const mapStateToProps = (state) => {
+  const player = state.player;
 
-  constructor() {
-    super();
-    this.state = store.getState().player;
-    this.toggle = this.toggle.bind(this);
-  }
+  return {
+    currentSong: player.currentSong,
+    currentSongList: player.currentSongList,
+    isPlaying: player.isPlaying,
+    progress: player.progress
+  };
+};
 
-  componentDidMount() {
+const mapDispatchToProps = (dispatch) => {
+  return {
+    prev () {
+      dispatch(previous());
+    },
+    next () {
+      dispatch(next());
+    },
+    toggle (currentSong, currentSongList) {
+      dispatch(toggleSong(currentSong, currentSongList))
+    },
+    setProgress () {
+      dispatch(setProgress(AUDIO.currentTime / AUDIO.duration))
+    }
 
-    AUDIO.addEventListener('ended', this.next);
+  };
+};
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(class extends Component {
+
+  componentDidMount () {
+    AUDIO.addEventListener('ended', this.props.next);
     AUDIO.addEventListener('timeupdate', () => {
-      store.dispatch(setProgress(AUDIO.currentTime / AUDIO.duration));
-    });
-
-    this.unsubscribe = store.subscribe(() => {
-      this.setState(store.getState().player);
+      this.props.setProgress(AUDIO.currentTime / AUDIO.duration);
     });
   }
 
-  componentWillUnmount() {
-    this.unsubscribe();
+  render () {
+    return <Player {...this.props} />
   }
+});
 
-  next() {
-    store.dispatch(next());
-  }
-
-  prev() {
-    store.dispatch(previous());
-  }
-
-  toggle() {
-    store.dispatch(
-      toggleSong(this.state.currentSong, this.state.currentSongList)
-    );
-  }
-
-  render() {
-    return <Player
-      {...this.state}
-      next={this.next}
-      prev={this.prev}
-      toggle={this.toggle}
-    />;
-  }
-
-}

@@ -3,7 +3,7 @@ import {
 } from '../constants';
 
 const initialLyricsState = {
-  text: null
+  text: ''
 };
 
 export default function (state = initialLyricsState, action) {

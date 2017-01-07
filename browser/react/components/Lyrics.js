@@ -2,13 +2,14 @@ import React from 'react';
 
 export default function (props) {
 
-  const text = props.lyrics.text;
+  const text = props.text;
   const artistQuery = props.artistQuery;
   const songQuery = props.songQuery;
   const handleSubmit = props.handleSubmit;
+  const handleChange = props.handleChange;
 
-  const artistChange = e => props.setArtist(e.target.value);
-  const songChange = e => props.setSong(e.target.value);
+  const artistChange = e => handleChange('artist', e.target.value);
+  const songChange = e => handleChange('song', e.target.value);
 
   return (
     <div style={{marginTop: '20px'}}>
